@@ -2,6 +2,7 @@ package com.coreaidan.pomodoro.controllers;
 
 import com.coreaidan.pomodoro.model.AttemptKind;
 import com.coreaidan.pomodoro.model.Attempt;
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
@@ -29,18 +30,25 @@ public class Home {
     }
 
     private void prepareAttempt(AttemptKind kind){
-        clearAttemptStyles();
+        reset();
+
         currentAttemtp = new Attempt(kind, "");
         addAttemptStyle(kind);
         title.setText(kind.getDisplayName());
         setTimerText(currentAttemtp.getRemainingSeconds());
-        //Todo: A.M -- this will create a new timeline on creation so we need to fix this.
         timeLine = new Timeline();
         timeLine.setCycleCount(kind.getTotalSeconds());
         timeLine.getKeyFrames().add(new KeyFrame(Duration.seconds(1), event -> {
             currentAttemtp.tick();
             setTimerText(currentAttemtp.getRemainingSeconds());
         }));
+    }
+
+    private void reset() {
+        clearAttemptStyles();
+        if(timeLine != null && timeLine.getStatus() == Animation.Status.RUNNING){
+            timeLine.stop();
+        }
     }
 
     public void playTimer(){
