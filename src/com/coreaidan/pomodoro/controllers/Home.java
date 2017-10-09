@@ -2,12 +2,15 @@ package com.coreaidan.pomodoro.controllers;
 
 import com.coreaidan.pomodoro.model.AttemptKind;
 import com.coreaidan.pomodoro.model.Attempt;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 public class Home {
     @FXML private VBox container;
@@ -17,9 +20,35 @@ public class Home {
 
     private StringProperty timerText;
 
+    private Timeline timeLine;
+
+
     public Home (){
         timerText = new SimpleStringProperty();
         setTimerText(3000);
+    }
+
+    private void prepareAttempt(AttemptKind kind){
+        clearAttemptStyles();
+        currentAttemtp = new Attempt(kind, "");
+        addAttemptStyle(kind);
+        title.setText(kind.getDisplayName());
+        setTimerText(currentAttemtp.getRemainingSeconds());
+        //Todo: A.M -- this will create a new timeline on creation so we need to fix this.
+        timeLine = new Timeline();
+        timeLine.setCycleCount(kind.getTotalSeconds());
+        timeLine.getKeyFrames().add(new KeyFrame(Duration.seconds(1), event -> {
+            currentAttemtp.tick();
+            setTimerText(currentAttemtp.getRemainingSeconds());
+        }));
+    }
+
+    public void playTimer(){
+        timeLine.play();
+    }
+
+    public void pauseTimer(){
+        timeLine.pause();
     }
 
     public String getTimerText() {
@@ -40,13 +69,6 @@ public class Home {
         setTimerText(String.format("%02d:%02d", minutes, seconds));
     }
 
-    private void prepareAttempt(AttemptKind kind){
-        clearAttemptStyles();
-        currentAttemtp = new Attempt(kind, "");
-        addAttemptStyle(kind);
-        title.setText(kind.getDisplayName());
-        setTimerText(currentAttemtp.getRemainingSeconds());
-    }
 
     private void addAttemptStyle(AttemptKind kind) {
         container.getStyleClass().add(kind.toString().toLowerCase());
@@ -61,5 +83,10 @@ public class Home {
 
     public void DEBUG(ActionEvent actionEvent) {
         System.out.println("hi mom");
+    }
+
+    public void handleRestart(ActionEvent actionEvent) {
+        prepareAttempt(AttemptKind.FOCUS);
+        playTimer();
     }
 }
