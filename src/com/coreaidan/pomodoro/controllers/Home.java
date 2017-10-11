@@ -10,12 +10,18 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.scene.media.AudioClip;
+
 
 public class Home {
     @FXML private VBox container;
     @FXML private Label title;
+    @FXML private TextArea message;
+
+    private final AudioClip applause;
 
     private Attempt currentAttemtp;
 
@@ -26,7 +32,9 @@ public class Home {
 
     public Home (){
         timerText = new SimpleStringProperty();
-        setTimerText(3000);
+        setTimerText(0);
+
+        applause= new AudioClip(getClass().getResource("/sounds/applause6.mp3").toExternalForm());
     }
 
     private void prepareAttempt(AttemptKind kind){
@@ -42,6 +50,18 @@ public class Home {
             currentAttemtp.tick();
             setTimerText(currentAttemtp.getRemainingSeconds());
         }));
+
+        timeLine.setOnFinished(event -> {
+            saveCurrentAttempt();
+            applause.play();
+            prepareAttempt(currentAttemtp.getKind() == AttemptKind.FOCUS ?
+                    AttemptKind.BREAK : AttemptKind.FOCUS);
+        });
+    }
+
+    private void saveCurrentAttempt() {
+        currentAttemtp.setMessage(message.getText());
+        currentAttemtp.save();
     }
 
     private void reset() {
@@ -52,10 +72,12 @@ public class Home {
     }
 
     public void playTimer(){
+        container.getStyleClass().add("playing");
         timeLine.play();
     }
 
     public void pauseTimer(){
+        container.getStyleClass().remove("playing");
         timeLine.pause();
     }
 
@@ -83,18 +105,27 @@ public class Home {
     }
 
     private void clearAttemptStyles(){
+        container.getStyleClass().remove("playing");
         for(AttemptKind kind: AttemptKind.values()){
             container.getStyleClass().remove(kind.toString().toLowerCase());
         }
     }
 
-
-    public void DEBUG(ActionEvent actionEvent) {
-        System.out.println("hi mom");
-    }
-
     public void handleRestart(ActionEvent actionEvent) {
         prepareAttempt(AttemptKind.FOCUS);
         playTimer();
+    }
+
+    public void handlePlay(ActionEvent actionEvent) {
+        if(currentAttemtp == null){
+            handleRestart(actionEvent);
+        }else{
+            playTimer();
+        }
+
+    }
+
+    public void handlePause(ActionEvent actionEvent) {
+        pauseTimer();
     }
 }

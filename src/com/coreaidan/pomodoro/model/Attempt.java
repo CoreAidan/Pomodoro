@@ -31,4 +31,17 @@ public class Attempt {
     public void tick() {
         remainingSeconds--;
     }
+
+    public void save() {
+        System.out.printf("Saving: %s %n", this);
+    }
+
+    @Override
+    public String toString() {
+        return "Attempt{" +
+                "message='" + message + '\'' +
+                ", remainingSeconds=" + remainingSeconds +
+                ", kind=" + kind +
+                '}';
+    }
 }
