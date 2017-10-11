@@ -1,2 +1,2 @@
 # Pomodoro
-a pomodoro timer app, used to track work time and break time
+a pomodoro timer app, used to help manage work focus time and break time
